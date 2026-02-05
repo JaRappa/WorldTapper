@@ -1,50 +1,130 @@
-# Welcome to your Expo app 👋
+# 🌍 WorldTapper 🌍
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+[![Expo](https://img.shields.io/badge/Expo-SDK%2054-000020?logo=expo&logoColor=white)](https://expo.dev)
+[![React Native](https://img.shields.io/badge/React%20Native-0.81-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/lambda/)
+[![WebSocket](https://img.shields.io/badge/Real--time-WebSocket-1F2937)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
+[![Live Demo](https://img.shields.io/badge/%F0%9F%8C%8D%20Live%20Demo-worldtapper.com-22C55E)](https://www.worldtapper.com)
 
-## Get started
+A real-time global counter product you can tap from anywhere, built as a full-stack mobile app.
 
-1. Install dependencies
+## Overview
 
-   ```bash
-   npm install
-   ```
+WorldTapper is a cross-platform mobile application that maintains a synchronized global counter across all connected users in real-time. Users can tap to increment the counter, and all changes are immediately broadcasted to every active client through WebSocket connections.
 
-2. Start the app
+## Technical Architecture
 
-   ```bash
-   npx expo start
-   ```
+### Frontend
+- **React Native** with **Expo** for cross-platform iOS, Android, and web support
+- **TypeScript** for type-safe development
+- **Expo Router** for file-based navigation
+- **React Native Reanimated** for smooth animations
+- **Expo Haptics** for tactile feedback
 
-In the output, you'll find options to open the app in a
+### Backend
+- **AWS Lambda** serverless functions for scalable API endpoints
+- **AWS API Gateway** for REST API and WebSocket management
+- **AWS DynamoDB** for persistent data storage
+- Real-time WebSocket broadcasting for instant updates across clients
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Key Features
+- ✅ Real-time synchronization across all connected clients
+- ✅ Optimistic UI updates for instant feedback
+- ✅ Automatic reconnection and error handling
+- ✅ Haptic feedback on interactions
+- ✅ Serverless architecture for high scalability
+- ✅ Cross-platform support (iOS, Android, Web)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Technical Highlights
 
-## Get a fresh project
+- **WebSocket Management**: Custom WebSocket manager with automatic reconnection, exponential backoff, and connection pooling
+- **State Management**: Efficient React hooks with optimistic updates and conflict resolution
+- **Cloud Infrastructure**: Full AWS serverless stack with Lambda, API Gateway, and DynamoDB
+- **Type Safety**: Complete TypeScript implementation with strict type checking
+- **Performance**: Optimized rendering with debouncing and memoization patterns
 
-When you're ready, run:
+## Project Structure
 
-```bash
-npm run reset-project
+```
+├── app/                    # React Native app screens
+│   └── (tabs)/            # Tab-based navigation
+├── components/            # Reusable UI components
+├── services/              # API and WebSocket services
+├── aws-lambda/            # Backend Lambda functions
+├── hooks/                 # Custom React hooks
+└── constants/             # Theme and configuration
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Getting Started
 
-## Learn more
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- Expo CLI
+- AWS Account (for backend deployment)
 
-To learn more about developing your project with Expo, look at the following resources:
+### Installation
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Install dependencies:
+```bash
+npm install
+```
 
-## Join the community
+2. Start the development server:
+```bash
+npx expo start
+```
 
-Join our community of developers creating universal apps.
+3. Run on your preferred platform:
+   - Press `i` for iOS simulator
+   - Press `a` for Android emulator
+   - Press `w` for web browser
+   - Scan QR code with Expo Go app
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Backend Setup
+
+See [aws-lambda/README.md](aws-lambda/README.md) for detailed instructions on deploying the AWS infrastructure.
+
+## Development
+
+```bash
+# Start development server
+npm start
+
+# Run on iOS
+npm run ios
+
+# Run on Android
+npm run android
+
+# Run on web
+npm run web
+
+# Lint code
+npm run lint
+```
+
+## Technologies Used
+
+**Frontend:**
+- React Native 0.81
+- Expo SDK 54
+- TypeScript 5.9
+- React Navigation 7
+- Expo Haptics
+
+**Backend:**
+- AWS Lambda (Node.js 20.x)
+- AWS API Gateway
+- AWS DynamoDB
+- WebSocket API
+
+**DevOps:**
+- ESLint
+- TypeScript strict mode
+- Git version control
+
+## License
+
+Private project
