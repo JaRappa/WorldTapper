@@ -1,17 +1,21 @@
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, AppState, Linking, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { getClickCount, incrementClickCount, wsManager } from '@/services/api';
 
 export default function HomeScreen() {
+  const { width, height } = useWindowDimensions();
   const [count, setCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClicking, setIsClicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lastClickTime = useRef<number>(0);
+
+  // Calculate earth size as 50% of the smaller dimension
+  const earthSize = Math.min(width, height) * 0.5;
 
   // Initial fetch
   const fetchCount = async () => {
@@ -98,7 +102,7 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={styles.title}>
-        🌍 World Tapper
+        World Tapper
       </ThemedText>
       
       <ThemedText style={styles.subtitle}>
@@ -111,9 +115,10 @@ export default function HomeScreen() {
         style={({ pressed }) => [
           styles.worldButton,
           pressed && styles.worldButtonPressed,
+          { width: earthSize, height: earthSize, borderRadius: earthSize / 2 },
         ]}
       >
-        <ThemedText style={styles.worldEmoji}>🌍</ThemedText>
+        <ThemedText style={{ fontSize: earthSize * 0.65, lineHeight: earthSize * 0.75 }}>🌍</ThemedText>
       </Pressable>
 
       <ThemedView style={styles.counterContainer}>
@@ -136,6 +141,13 @@ export default function HomeScreen() {
       <ThemedText style={styles.instruction}>
         Tap the Earth to add your click!
       </ThemedText>
+
+      <Pressable
+        style={styles.githubButton}
+        onPress={() => Linking.openURL('https://github.com/JaRappa/WorldTapper')}
+      >
+        <ThemedText style={styles.githubText}>GitHub</ThemedText>
+      </Pressable>
     </ThemedView>
   );
 }
@@ -145,19 +157,22 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: '5%',
+    position: 'relative',
   },
   title: {
-    marginBottom: 8,
+    marginBottom: '2%',
+    fontSize: 28,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: '4%',
     opacity: 0.7,
-    marginBottom: 40,
+    marginBottom: '8%',
   },
   worldButton: {
-    padding: 20,
-    borderRadius: 100,
+    padding: '5%',
+    justifyContent: 'center',
+    alignItems: 'center',
     transform: [{ scale: 1 }],
   },
   worldButtonPressed: {
@@ -170,29 +185,44 @@ const styles = StyleSheet.create({
   },
   counterContainer: {
     alignItems: 'center',
-    marginTop: 40,
-    minHeight: 80,
+    marginTop: '8%',
+    minHeight: '10%',
     justifyContent: 'center',
   },
   counterLabel: {
-    fontSize: 14,
+    fontSize: '3%',
     opacity: 0.6,
     textTransform: 'uppercase',
     letterSpacing: 2,
-    marginBottom: 8,
+    marginBottom: '2%',
   },
   counter: {
-    fontSize: 48,
+    fontSize: '12%',
     fontWeight: 'bold',
   },
   error: {
     color: '#e74c3c',
-    marginTop: 16,
-    fontSize: 14,
+    marginTop: '4%',
+    fontSize: '3%',
   },
   instruction: {
-    marginTop: 40,
+    marginTop: '8%',
     opacity: 0.5,
-    fontSize: 14,
+    fontSize: '3%',
+  },
+  githubButton: {
+    position: 'absolute',
+    bottom: '5%',
+    right: '5%',
+    paddingHorizontal: '4%',
+    paddingVertical: '2%',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#0a7ea4',
+  },
+  githubText: {
+    color: '#0a7ea4',
+    fontSize: '3.5%',
+    fontWeight: '500',
   },
 });
