@@ -1,22 +1,19 @@
 import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { ActivityIndicator, AppState, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { getClickCount, incrementClickCount } from '@/services/api';
+import { getClickCount, incrementClickCount, wsManager } from '@/services/api';
 
 export default function HomeScreen() {
   const [count, setCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClicking, setIsClicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const lastClickTime = useRef<number>(0);
 
-  // Fetch initial count on mount
-  useEffect(() => {
-    fetchCount();
-  }, []);
-
+  // Initial fetch
   const fetchCount = async () => {
     try {
       setError(null);
@@ -30,10 +27,35 @@ export default function HomeScreen() {
     }
   };
 
+  // Set up WebSocket for real-time updates
+  useEffect(() => {
+    fetchCount();
+
+    // Subscribe to real-time count updates via WebSocket
+    const unsubscribe = wsManager.subscribe((newCount) => {
+      // Skip if we just clicked (to avoid overwriting optimistic update with stale data)
+      if (Date.now() - lastClickTime.current < 500) return;
+      setCount(newCount);
+    });
+
+    // Handle app state changes
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        fetchCount(); // Refresh when app becomes active
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      subscription.remove();
+    };
+  }, []);
+
   const handleClick = useCallback(async () => {
     if (isClicking) return;
 
     setIsClicking(true);
+    lastClickTime.current = Date.now(); // Track click time to avoid poll conflicts
     
     // Trigger haptic feedback
     try {
