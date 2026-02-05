@@ -1,6 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
