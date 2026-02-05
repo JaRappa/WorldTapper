@@ -5,11 +5,11 @@
  * for the global click counter.
  */
 
-// TODO: Replace with your actual AWS API Gateway URL after deploying
-const API_URL = 'https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/prod/counter';
+// AWS API Gateway URL
+const API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/counter';
 
 // For local testing without AWS, use this mock:
-const USE_MOCK = true; // Set to false when AWS is configured
+const USE_MOCK = false; // Set to true for local testing without AWS
 let mockCount = 0;
 
 export interface CounterResponse {
