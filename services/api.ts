@@ -1,5 +1,5 @@
 /**
- * API Service for World Clicker
+ * API Service for World Tapper
  * 
  * Handles communication with the AWS Lambda backend
  * for the global click counter.

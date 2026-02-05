@@ -1,5 +1,5 @@
 /**
- * WebSocket Connection Handler for World Clicker
+ * WebSocket Connection Handler for World Tapper
  * 
  * Handles $connect and $disconnect events for the WebSocket API.
  * Stores connection IDs in DynamoDB.

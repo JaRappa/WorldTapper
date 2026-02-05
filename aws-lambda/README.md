@@ -1,6 +1,6 @@
-# AWS Lambda Setup for World Clicker
+# AWS Lambda Setup for World Tapper
 
-This guide will help you set up the AWS Lambda function for the World Clicker global counter.
+This guide will help you set up the AWS Lambda function for the World Tapper global counter.
 
 ## Prerequisites
 

@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "WorldClicker",
-    "slug": "WorldClicker",
+    "name": "WorldTapper",
+    "slug": "WorldTapper",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "worldclicker",
+    "scheme": "worldtapper",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -20,11 +20,11 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.WorldClicker"
+      "package": "com.anonymous.WorldTapper"
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.svg"
     },
     "plugins": [
       "expo-router",

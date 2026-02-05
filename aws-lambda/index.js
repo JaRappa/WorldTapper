@@ -1,5 +1,5 @@
 /**
- * AWS Lambda function for World Clicker
+ * AWS Lambda function for World Tapper
  * 
  * This function handles:
  * - GET: Returns the current global click count

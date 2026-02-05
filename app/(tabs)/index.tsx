@@ -98,11 +98,11 @@ export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={styles.title}>
-        🌍 World Clicker
+        🌍 World Tapper
       </ThemedText>
       
       <ThemedText style={styles.subtitle}>
-        Everyone clicks together!
+        Everyone taps together!
       </ThemedText>
 
       <Pressable
