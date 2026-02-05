@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Linking, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, AppState, Linking, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -101,46 +101,52 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
-        World Tapper
-      </ThemedText>
-      
-      <ThemedText style={styles.subtitle}>
-        Everyone taps together!
-      </ThemedText>
+      <View style={styles.headerContainer}>
+        <ThemedText type="title" style={styles.title}>
+          World Tapper
+        </ThemedText>
+        
+        <ThemedText style={styles.subtitle}>
+          Everyone taps together!
+        </ThemedText>
+      </View>
 
-      <Pressable
-        onPress={handleClick}
-        disabled={isLoading}
-        style={({ pressed }) => [
-          styles.worldButton,
-          pressed && styles.worldButtonPressed,
-          { width: earthSize, height: earthSize, borderRadius: earthSize / 2 },
-        ]}
-      >
-        <ThemedText style={{ fontSize: earthSize * 0.65, lineHeight: earthSize * 0.75 }}>🌍</ThemedText>
-      </Pressable>
+      <View style={styles.earthContainer}>
+        <Pressable
+          onPress={handleClick}
+          disabled={isLoading}
+          style={({ pressed }) => [
+            styles.worldButton,
+            pressed && styles.worldButtonPressed,
+            { width: earthSize, height: earthSize, borderRadius: earthSize / 2 },
+          ]}
+        >
+          <ThemedText style={{ fontSize: earthSize * 0.65, lineHeight: earthSize * 0.75 }}>🌍</ThemedText>
+        </Pressable>
+      </View>
 
-      <ThemedView style={styles.counterContainer}>
-        {isLoading ? (
-          <ActivityIndicator size="large" color="#0a7ea4" />
-        ) : (
-          <>
-            <ThemedText style={styles.counterLabel}>Global Clicks</ThemedText>
-            <ThemedText type="title" style={styles.counter}>
-              {count !== null ? formatCount(count) : '—'}
-            </ThemedText>
-          </>
+      <View style={styles.bottomContainer}>
+        <ThemedView style={styles.counterContainer}>
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#0a7ea4" />
+          ) : (
+            <>
+              <ThemedText style={styles.counterLabel}>Global Clicks</ThemedText>
+              <ThemedText type="title" style={styles.counter}>
+                {count !== null ? formatCount(count) : '—'}
+              </ThemedText>
+            </>
+          )}
+        </ThemedView>
+
+        {error && (
+          <ThemedText style={styles.error}>{error}</ThemedText>
         )}
-      </ThemedView>
 
-      {error && (
-        <ThemedText style={styles.error}>{error}</ThemedText>
-      )}
-
-      <ThemedText style={styles.instruction}>
-        Tap the Earth to add your click!
-      </ThemedText>
+        <ThemedText style={styles.instruction}>
+          Tap the Earth to add your click!
+        </ThemedText>
+      </View>
 
       <Pressable
         style={styles.githubButton}
@@ -155,10 +161,12 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
     position: 'relative',
+  },
+  headerContainer: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
   title: {
     marginBottom: 8,
@@ -167,7 +175,13 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     opacity: 0.7,
-    marginBottom: 40,
+    marginBottom: 20,
+  },
+  earthContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
   },
   worldButton: {
     padding: 0,
@@ -179,15 +193,14 @@ const styles = StyleSheet.create({
     transform: [{ scale: 0.95 }],
     opacity: 0.9,
   },
-  worldEmoji: {
-    fontSize: 150,
-    lineHeight: 170,
+  bottomContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 80,
+    alignItems: 'center',
   },
   counterContainer: {
     alignItems: 'center',
-    marginTop: 40,
-    minHeight: 80,
-    justifyContent: 'center',
+    marginBottom: 16,
   },
   counterLabel: {
     fontSize: 14,
@@ -202,11 +215,10 @@ const styles = StyleSheet.create({
   },
   error: {
     color: '#e74c3c',
-    marginTop: 16,
+    marginBottom: 16,
     fontSize: 14,
   },
   instruction: {
-    marginTop: 40,
     opacity: 0.5,
     fontSize: 14,
   },
