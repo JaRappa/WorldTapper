@@ -18,9 +18,19 @@ interface AnimatedCounterProps {
   formatValue?: (value: number) => string;
 }
 
-// Default formatter that adds commas for thousands
+// Default formatter that abbreviates large numbers
 const defaultFormat = (value: number): string => {
-  return Math.floor(value).toLocaleString();
+  const num = Math.floor(value);
+  if (num >= 1_000_000_000) {
+    return (num / 1_000_000_000).toFixed(1) + 'B';
+  }
+  if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(1) + 'M';
+  }
+  if (num >= 1_000) {
+    return (num / 1_000).toFixed(1) + 'K';
+  }
+  return num.toLocaleString();
 };
 
 export function AnimatedCounter({

@@ -209,18 +209,28 @@ export default function HomeScreen() {
     }
   };
 
+  // Always show full number with commas
   const formatCount = (num: number): string => {
-    if (num >= 1_000_000_000) {
-      return (num / 1_000_000_000).toFixed(1) + 'B';
-    }
-    if (num >= 1_000_000) {
-      return (num / 1_000_000).toFixed(1) + 'M';
-    }
-    if (num >= 1_000) {
-      return (num / 1_000).toFixed(1) + 'K';
-    }
     return num.toLocaleString();
   };
+  
+  // Calculate font size based on number of digits to fit on screen
+  const getCounterFontSize = (num: number): number => {
+    const digits = num.toString().length;
+    const baseSize = isSmallScreen ? 32 : isMediumScreen ? 40 : 48;
+    
+    // Scale down for longer numbers
+    if (digits <= 6) return baseSize;
+    if (digits <= 9) return Math.floor(baseSize * 0.75);
+    if (digits <= 12) return Math.floor(baseSize * 0.6);
+    if (digits <= 15) return Math.floor(baseSize * 0.5);
+    return Math.floor(baseSize * 0.4);
+  };
+  
+  const dynamicCounterFontSize = count !== null ? getCounterFontSize(count) : counterFontSize;
+  
+  // Balance value for display
+  const balanceValue = (userData?.balance || 0) + optimisticBalanceBonus;
 
   const totalClicksPerMinute = userData?.ownedItems 
     ? calculateTotalClicksPerMinute(userData.ownedItems) 
@@ -285,7 +295,7 @@ export default function HomeScreen() {
         ) : (
           <>
             <ThemedText style={styles.counterLabel}>Global Clicks</ThemedText>
-            <ThemedText type="title" style={[styles.counter, { fontSize: counterFontSize, lineHeight: counterFontSize * 1.3 }]}>
+            <ThemedText type="title" style={[styles.counter, { fontSize: dynamicCounterFontSize, lineHeight: dynamicCounterFontSize * 1.3 }]}>
               {count !== null ? formatCount(count) : '—'}
             </ThemedText>
           </>
@@ -297,7 +307,7 @@ export default function HomeScreen() {
         <View style={styles.balanceContainer}>
           <ThemedText style={styles.balanceLabel}>Your Balance</ThemedText>
           <AnimatedCounter
-            value={(userData?.balance || 0) + optimisticBalanceBonus}
+            value={balanceValue}
             style={styles.balanceAmount}
             prefix="🖱️ "
             duration={300}

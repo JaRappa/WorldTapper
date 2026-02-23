@@ -91,6 +91,11 @@ function formatNumber(num: number): string {
   return num.toLocaleString();
 }
 
+// Full number with commas for balance display
+function formatExact(num: number): string {
+  return num.toLocaleString();
+}
+
 export function StoreModal({
   visible,
   onClose,
@@ -119,7 +124,7 @@ export function StoreModal({
           
           <View style={styles.balanceContainer}>
             <ThemedText style={styles.balanceLabel}>Your Balance</ThemedText>
-            <ThemedText style={styles.balanceValue}>🖱️ {formatNumber(balance)}</ThemedText>
+            <ThemedText style={styles.balanceValue}>🖱️ {formatExact(balance)}</ThemedText>
           </View>
           
           <ScrollView style={styles.itemsList} showsVerticalScrollIndicator={false}>
