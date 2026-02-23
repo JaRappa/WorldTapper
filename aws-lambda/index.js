@@ -205,79 +205,6 @@ async function getJwks() {
 }
 
 /**
- * Converts a JWK to PEM format for verification
- */
-function jwkToPem(jwk) {
-  if (jwk.kty !== "RSA") {
-    throw new Error("Only RSA keys are supported");
-  }
-
-  const n = Buffer.from(jwk.n, "base64url");
-  const e = Buffer.from(jwk.e, "base64url");
-
-  // Build DER encoding for RSA public key
-  const nLen = n.length;
-  const eLen = e.length;
-
-  // Integer encoding helper
-  function encodeInteger(buf) {
-    // Add leading zero if high bit is set (to keep it positive)
-    if (buf[0] & 0x80) {
-      buf = Buffer.concat([Buffer.from([0x00]), buf]);
-    }
-    const len = buf.length;
-    if (len < 128) {
-      return Buffer.concat([Buffer.from([0x02, len]), buf]);
-    } else if (len < 256) {
-      return Buffer.concat([Buffer.from([0x02, 0x81, len]), buf]);
-    } else {
-      return Buffer.concat([Buffer.from([0x02, 0x82, (len >> 8) & 0xff, len & 0xff]), buf]);
-    }
-  }
-
-  const nEncoded = encodeInteger(n);
-  const eEncoded = encodeInteger(e);
-  const sequence = Buffer.concat([nEncoded, eEncoded]);
-
-  // Wrap in SEQUENCE
-  let seqLen;
-  if (sequence.length < 128) {
-    seqLen = Buffer.from([0x30, sequence.length]);
-  } else if (sequence.length < 256) {
-    seqLen = Buffer.from([0x30, 0x81, sequence.length]);
-  } else {
-    seqLen = Buffer.from([0x30, 0x82, (sequence.length >> 8) & 0xff, sequence.length & 0xff]);
-  }
-  const rsaPublicKey = Buffer.concat([seqLen, sequence]);
-
-  // Wrap in SubjectPublicKeyInfo
-  const rsaOid = Buffer.from([
-    0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-    0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00
-  ]);
-  const bitString = Buffer.concat([
-    Buffer.from([0x03, rsaPublicKey.length + 1, 0x00]),
-    rsaPublicKey
-  ]);
-  const spki = Buffer.concat([rsaOid, bitString]);
-
-  let spkiLen;
-  if (spki.length < 128) {
-    spkiLen = Buffer.from([0x30, spki.length]);
-  } else if (spki.length < 256) {
-    spkiLen = Buffer.from([0x30, 0x81, spki.length]);
-  } else {
-    spkiLen = Buffer.from([0x30, 0x82, (spki.length >> 8) & 0xff, spki.length & 0xff]);
-  }
-  const der = Buffer.concat([spkiLen, spki]);
-
-  // Convert to PEM
-  const base64 = der.toString("base64");
-  const lines = base64.match(/.{1,64}/g).join("\n");
-  return `-----BEGIN PUBLIC KEY-----\n${lines}\n-----END PUBLIC KEY-----`;
-}
-
-/**
  * Base64URL decode helper
  */
 function base64urlDecode(str) {
@@ -341,15 +268,27 @@ async function verifyToken(authHeader) {
     throw new Error("Signing key not found");
   }
 
-  // Convert JWK to PEM and verify signature
-  const pem = jwkToPem(key);
+  // Use Node.js crypto.createPublicKey to import JWK directly (Node 16+)
+  // This avoids manual PEM conversion which is error-prone
+  const publicKey = crypto.createPublicKey({
+    key: {
+      kty: key.kty,
+      n: key.n,
+      e: key.e,
+    },
+    format: 'jwk',
+  });
+
   const signatureInput = `${headerB64}.${payloadB64}`;
   const signature = base64urlDecode(signatureB64);
 
   const isValid = crypto.verify(
-    "RSA-SHA256",
+    "sha256",
     Buffer.from(signatureInput),
-    pem,
+    {
+      key: publicKey,
+      padding: crypto.constants.RSA_PKCS1_PADDING,
+    },
     signature
   );
 
