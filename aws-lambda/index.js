@@ -17,6 +17,7 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const { DynamoDBDocumentClient, GetCommand, UpdateCommand, ScanCommand, DeleteCommand, PutCommand } = require("@aws-sdk/lib-dynamodb");
 const { ApiGatewayManagementApiClient, PostToConnectionCommand } = require("@aws-sdk/client-apigatewaymanagementapi");
+const { CognitoIdentityProviderClient, ListUsersCommand } = require("@aws-sdk/client-cognito-identity-provider");
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -74,12 +75,14 @@ async function getOrCreateUser(userId) {
   }
 
   // Create new user
+  console.log("getCognitoUsername called with userId:", userId);
+  const cognitoUsername = await getCognitoUsername(userId);
   const newUser = {
     odaUserId: userId,
     balance: 0,
     ownedItems: {},
     totalClicks: 0,
-    username: "",
+    username: cognitoUsername,
     createdAt: Date.now(),
   };
 
@@ -141,6 +144,45 @@ async function broadcastCount(count) {
 
   await Promise.all(sendPromises);
 }
+
+async function getCognitoUsername(userId) {
+  console.log("getCognitoUsername called with userId (sub):", userId);
+  try {
+    // Use ListUsers with a filter on sub to find the user by their UUID
+    const command = new ListUsersCommand({
+      UserPoolId: COGNITO_USER_POOL_ID,
+      Filter: `sub = "${userId}"`,
+      Limit: 1,
+    });
+    const response = await cognitoClient.send(command);
+    console.log("ListUsers response for", userId, JSON.stringify(response, null, 2));
+    
+    if (!response.Users || response.Users.length === 0) {
+      console.log("No user found for sub:", userId);
+      return "";
+    }
+    
+    const cognitoUser = response.Users[0];
+    let username = cognitoUser.Username; // This is the actual Cognito username
+    
+    // Also check for preferred_username attribute if set
+    if (cognitoUser.Attributes) {
+      const preferred = cognitoUser.Attributes.find(attr => attr.Name === "preferred_username");
+      if (preferred && preferred.Value) {
+        username = preferred.Value;
+      }
+    }
+    
+    console.log("Found username:", username, "for sub:", userId);
+    return username || "";
+  } catch (e) {
+    console.log("ListUsers error for", userId, e);
+    return "";
+  }
+}
+
+const COGNITO_USER_POOL_ID = process.env.COGNITO_USER_POOL_ID || "us-east-1_C8WRlcvHt";
+const cognitoClient = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
 exports.handler = async (event) => {
   console.log("Received event:", JSON.stringify(event, null, 2));
