@@ -16,8 +16,9 @@ import {
     Pressable,
     StyleSheet,
     TextInput,
-    View,
+    View
 } from 'react-native';
+import { LegalModal } from './legal-modal';
 
 interface AuthModalProps {
   visible: boolean;
@@ -43,6 +44,8 @@ export function AuthModal({
   const [confirmCode, setConfirmCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [showLegalModal, setShowLegalModal] = useState<'terms' | 'privacy' | null>(null);
   
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -55,6 +58,7 @@ export function AuthModal({
     setConfirmCode('');
     setError(null);
     setMode('signin');
+    setAgreedToTerms(false);
   };
   
   const handleClose = () => {
@@ -89,6 +93,11 @@ export function AuthModal({
     
     if (password.length < 8) {
       setError('Password must be at least 8 characters');
+      return;
+    }
+    
+    if (!agreedToTerms) {
+      setError('You must agree to the Terms of Service and Privacy Policy');
       return;
     }
     
@@ -199,6 +208,41 @@ export function AuthModal({
                 onChangeText={setPassword}
                 secureTextEntry
               />
+              
+              {mode === 'signup' && (
+                <View style={styles.checkboxContainer}>
+                  <Pressable
+                    style={[
+                      styles.checkbox,
+                      { borderColor: tintColor },
+                      agreedToTerms && { backgroundColor: tintColor },
+                    ]}
+                    onPress={() => setAgreedToTerms(!agreedToTerms)}
+                  >
+                    {agreedToTerms && (
+                      <ThemedText style={styles.checkmark}>✓</ThemedText>
+                    )}
+                  </Pressable>
+                  <View style={styles.checkboxTextContainer}>
+                    <ThemedText style={styles.checkboxText}>
+                      I am at least 14 years old and agree to the{' '}
+                    </ThemedText>
+                    <View style={styles.legalLinksRow}>
+                      <Pressable onPress={() => setShowLegalModal('terms')}>
+                        <ThemedText style={[styles.legalLink, { color: tintColor }]}>
+                          Terms of Service
+                        </ThemedText>
+                      </Pressable>
+                      <ThemedText style={styles.checkboxText}> and </ThemedText>
+                      <Pressable onPress={() => setShowLegalModal('privacy')}>
+                        <ThemedText style={[styles.legalLink, { color: tintColor }]}>
+                          Privacy Policy
+                        </ThemedText>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+              )}
             </>
           )}
           
@@ -226,6 +270,7 @@ export function AuthModal({
               onPress={() => {
                 setMode(mode === 'signin' ? 'signup' : 'signin');
                 setError(null);
+                setAgreedToTerms(false);
               }}
             >
               <ThemedText style={styles.switchModeText}>
@@ -235,6 +280,15 @@ export function AuthModal({
           )}
         </ThemedView>
       </KeyboardAvoidingView>
+      
+      {/* Legal Modals */}
+      {showLegalModal && (
+        <LegalModal
+          visible={true}
+          onClose={() => setShowLegalModal(null)}
+          type={showLegalModal}
+        />
+      )}
     </Modal>
   );
 }
@@ -303,5 +357,44 @@ const styles = StyleSheet.create({
   switchModeText: {
     opacity: 0.7,
     fontSize: 14,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+    marginTop: 4,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderRadius: 6,
+    marginRight: 12,
+    marginTop: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkmark: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  checkboxTextContainer: {
+    flex: 1,
+  },
+  checkboxText: {
+    fontSize: 13,
+    opacity: 0.8,
+    lineHeight: 20,
+  },
+  legalLinksRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  legalLink: {
+    fontSize: 13,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+    lineHeight: 20,
   },
 });
