@@ -179,6 +179,31 @@ exports.handler = async (event) => {
       };
     }
 
+    // Route: GET /leaderboard - Get top players by total clicks
+    if (httpMethod === "GET" && path.includes("/leaderboard")) {
+      const result = await docClient.send(
+        new ScanCommand({ TableName: USERS_TABLE })
+      );
+
+      // Filter out users with 0 clicks and sort by totalClicks descending
+      const leaderboard = (result.Items || [])
+        .filter(user => user.totalClicks > 0)
+        .sort((a, b) => (b.totalClicks || 0) - (a.totalClicks || 0))
+        .slice(0, 100) // Top 100 players
+        .map(user => ({
+          odaUserId: user.odaUserId,
+          username: user.username || "Anonymous",
+          totalClicks: user.totalClicks || 0,
+          createdAt: user.createdAt || Date.now(),
+        }));
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({ leaderboard }),
+      };
+    }
+
     // Route: GET /store/global - Get all auto-clickers
     if (httpMethod === "GET" && path.includes("/store/global")) {
       const result = await docClient.send(

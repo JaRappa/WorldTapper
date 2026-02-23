@@ -11,6 +11,7 @@ import { getIdToken } from './auth';
 const API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/counter';
 const USER_API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/user';
 const STORE_API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/store';
+const LEADERBOARD_API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/leaderboard';
 const WS_URL = 'wss://jo6m4amkee.execute-api.us-east-1.amazonaws.com/prod';
 
 // For local testing without AWS, use this mock:
@@ -43,6 +44,13 @@ export interface PurchaseResult {
   newBalance: number;
   ownedItems: Record<string, number>;
   error?: string;
+}
+
+export interface LeaderboardEntry {
+  odaUserId: string;
+  username: string;
+  totalClicks: number;
+  createdAt: number;
 }
 
 // WebSocket connection management
@@ -311,6 +319,35 @@ export async function getGlobalAutoClickers(): Promise<GlobalAutoClickers> {
     return await response.json();
   } catch (error) {
     console.error('Failed to get global auto-clickers:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get the leaderboard (top players by total clicks)
+ */
+export async function getLeaderboard(): Promise<LeaderboardEntry[]> {
+  if (USE_MOCK) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return [];
+  }
+
+  try {
+    const response = await fetch(LEADERBOARD_API_URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.leaderboard || [];
+  } catch (error) {
+    console.error('Failed to get leaderboard:', error);
     throw error;
   }
 }

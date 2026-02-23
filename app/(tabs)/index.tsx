@@ -6,6 +6,7 @@ import { AnimatedCounter } from '@/components/animated-counter';
 import { AuthModal } from '@/components/auth-modal';
 import { AutoClickerRing } from '@/components/auto-clicker-ring';
 import { InventoryModal } from '@/components/inventory-modal';
+import { LeaderboardModal } from '@/components/leaderboard-modal';
 import { StoreModal } from '@/components/store-modal';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -24,6 +25,7 @@ export default function HomeScreen() {
   const [showStore, setShowStore] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
   const [showInventory, setShowInventory] = useState(false);
+  const [showLeaderboard, setShowLeaderboard] = useState(false);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [optimisticBalanceBonus, setOptimisticBalanceBonus] = useState(0);
   const lastClickTime = useRef<number>(0);
@@ -238,8 +240,15 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      {/* Header with auth/user controls */}
+      {/* Header with leaderboard and auth/user controls */}
       <View style={styles.header}>
+        <Pressable 
+          onPress={() => setShowLeaderboard(true)} 
+          style={styles.leaderboardButton}
+        >
+          <ThemedText style={styles.leaderboardButtonText}>🏆</ThemedText>
+        </Pressable>
+        
         {isSignedIn ? (
           <View style={styles.userInfo}>
             <ThemedText style={styles.welcomeText}>
@@ -375,6 +384,12 @@ export default function HomeScreen() {
         onClose={() => setShowInventory(false)}
         ownedItems={userData?.ownedItems || {}}
       />
+
+      {/* Leaderboard Modal */}
+      <LeaderboardModal
+        visible={showLeaderboard}
+        onClose={() => setShowLeaderboard(false)}
+      />
     </ThemedView>
   );
 }
@@ -389,10 +404,16 @@ const styles = StyleSheet.create({
   header: {
     width: '100%',
     flexDirection: 'row',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
     paddingHorizontal: 4,
+  },
+  leaderboardButton: {
+    padding: 8,
+  },
+  leaderboardButtonText: {
+    fontSize: 24,
   },
   userInfo: {
     flexDirection: 'row',
