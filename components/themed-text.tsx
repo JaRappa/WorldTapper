@@ -1,4 +1,4 @@
-import { StyleSheet, Text, type TextProps } from 'react-native';
+import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
 
 import { useThemeColor } from '@/hooks/use-theme-color';
 
@@ -19,6 +19,8 @@ export function ThemedText({
 
   return (
     <Text
+      adjustsFontSizeToFit={Platform.OS !== 'web'}
+      minimumFontScale={0.7}
       style={[
         { color },
         type === 'default' ? styles.default : undefined,

@@ -1,6 +1,6 @@
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, AppState, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -12,6 +12,17 @@ export default function HomeScreen() {
   const [isClicking, setIsClicking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const lastClickTime = useRef<number>(0);
+  const { width: screenWidth } = useWindowDimensions();
+  
+  // Responsive scaling based on screen width
+  const isSmallScreen = screenWidth < 375;
+  const isMediumScreen = screenWidth >= 375 && screenWidth < 768;
+  
+  // Dynamic sizes
+  const emojiSize = isSmallScreen ? 100 : isMediumScreen ? 130 : 150;
+  const counterFontSize = isSmallScreen ? 32 : isMediumScreen ? 40 : 48;
+  const titleMarginBottom = isSmallScreen ? 4 : 8;
+  const sectionSpacing = isSmallScreen ? 24 : 40;
 
   // Initial fetch
   const fetchCount = async () => {
@@ -97,11 +108,11 @@ export default function HomeScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
+      <ThemedText type="title" style={[styles.title, { marginBottom: titleMarginBottom }]}>
         🌍 World Tapper
       </ThemedText>
       
-      <ThemedText style={styles.subtitle}>
+      <ThemedText style={[styles.subtitle, { marginBottom: sectionSpacing }]}>
         Everyone taps together!
       </ThemedText>
 
@@ -113,16 +124,16 @@ export default function HomeScreen() {
           pressed && styles.worldButtonPressed,
         ]}
       >
-        <ThemedText style={styles.worldEmoji}>🌍</ThemedText>
+        <ThemedText style={[styles.worldEmoji, { fontSize: emojiSize, lineHeight: emojiSize * 1.15 }]}>🌍</ThemedText>
       </Pressable>
 
-      <ThemedView style={styles.counterContainer}>
+      <ThemedView style={[styles.counterContainer, { marginTop: sectionSpacing }]}>
         {isLoading ? (
           <ActivityIndicator size="large" color="#0a7ea4" />
         ) : (
           <>
             <ThemedText style={styles.counterLabel}>Global Clicks</ThemedText>
-            <ThemedText type="title" style={styles.counter}>
+            <ThemedText type="title" style={[styles.counter, { fontSize: counterFontSize, lineHeight: counterFontSize * 1.3 }]}>
               {count !== null ? formatCount(count) : '—'}
             </ThemedText>
           </>
@@ -133,7 +144,7 @@ export default function HomeScreen() {
         <ThemedText style={styles.error}>{error}</ThemedText>
       )}
 
-      <ThemedText style={styles.instruction}>
+      <ThemedText style={[styles.instruction, { marginTop: sectionSpacing }]}>
         Tap the Earth to add your click!
       </ThemedText>
     </ThemedView>
@@ -145,15 +156,16 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    padding: 16,
+    paddingHorizontal: 12,
   },
   title: {
-    marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     opacity: 0.7,
-    marginBottom: 40,
+    textAlign: 'center',
   },
   worldButton: {
     padding: 20,
@@ -165,34 +177,39 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   worldEmoji: {
-    fontSize: 150,
-    lineHeight: 170,
+    textAlign: 'center',
   },
   counterContainer: {
     alignItems: 'center',
-    marginTop: 40,
     minHeight: 80,
     justifyContent: 'center',
+    width: '100%',
+    paddingHorizontal: 8,
   },
   counterLabel: {
     fontSize: 14,
     opacity: 0.6,
     textTransform: 'uppercase',
     letterSpacing: 2,
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   counter: {
-    fontSize: 48,
     fontWeight: 'bold',
+    textAlign: 'center',
+    flexShrink: 1,
+    flexWrap: 'wrap',
+    paddingTop: 4,
   },
   error: {
     color: '#e74c3c',
     marginTop: 16,
     fontSize: 14,
+    textAlign: 'center',
   },
   instruction: {
-    marginTop: 40,
     opacity: 0.5,
     fontSize: 14,
+    textAlign: 'center',
   },
 });
