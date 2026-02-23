@@ -196,22 +196,23 @@ export function AutoClickerRing({ ownedItems, worldSize, onBatchClick, onLocalCl
     return null;
   }
   
-  // Calculate ring radius based on world size and number of items
+  // Calculate ring radius based on world size
   const baseRadius = worldSize / 2 + 30;
-  // Add more radius if there are many items
-  const itemsPerRing = 12;
+  const emojiSize = 24; // Size of emoji
+  const itemsPerRing = 250; // Max items per ring before starting a new ring
   
   return (
     <View style={[styles.container, { width: worldSize + 200, height: worldSize + 200 }]}>
       {orbitingItems.map((orbiting, idx) => {
-        // Calculate which ring this item is on
+        // Calculate which ring this item is on (250 items per ring)
         const ringIndex = Math.floor(idx / itemsPerRing);
         const positionInRing = idx % itemsPerRing;
         const itemsInThisRing = Math.min(itemsPerRing, orbitingItems.length - ringIndex * itemsPerRing);
         
-        // Calculate angle for this position
+        // Calculate angle for this position - items evenly distributed, will overlap when many
         const angle = (positionInRing / itemsInThisRing) * Math.PI * 2 - Math.PI / 2;
-        const radius = baseRadius + ringIndex * 35;
+        // Each ring is 1 emoji width (24px) apart
+        const radius = baseRadius + ringIndex * emojiSize;
         
         return (
           <View 
