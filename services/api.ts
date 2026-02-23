@@ -90,11 +90,12 @@ class WebSocketManager {
         this.scheduleReconnect();
       };
 
-      this.ws.onerror = (error) => {
-        console.error('WebSocket error:', error);
+      this.ws.onerror = () => {
+        // Silently handle WebSocket errors - they're common on iOS/Expo Go
+        // The app will still work via HTTP polling
       };
     } catch (error) {
-      console.error('Failed to create WebSocket:', error);
+      // Silently fail - WebSocket is optional enhancement
       this.scheduleReconnect();
     }
   }
