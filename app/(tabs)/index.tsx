@@ -383,22 +383,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
+    paddingTop: 50,
     paddingHorizontal: 12,
   },
   header: {
-    position: 'absolute',
-    top: 50,
-    right: 16,
+    width: '100%',
     flexDirection: 'row',
+    justifyContent: 'flex-end',
     alignItems: 'center',
-    zIndex: 10,
+    marginBottom: 16,
+    paddingHorizontal: 4,
   },
   userInfo: {
-    flexDirection: 'column',
-    alignItems: 'flex-end',
-    gap: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   welcomeText: {
     fontWeight: 'bold',
@@ -433,9 +432,11 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
+    lineHeight: 42,
   },
   subtitle: {
     fontSize: 16,
+    lineHeight: 24,
     opacity: 0.7,
     textAlign: 'center',
   },
@@ -447,8 +448,6 @@ const styles = StyleSheet.create({
   worldButton: {
     padding: 20,
     borderRadius: 100,
-    transform: [{ scale: 1 }],
-    zIndex: 1,
   },
   worldButtonPressed: {
     transform: [{ scale: 0.95 }],
@@ -489,11 +488,12 @@ const styles = StyleSheet.create({
     marginTop: 16,
     backgroundColor: 'rgba(10, 126, 164, 0.1)',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 16,
     borderRadius: 16,
   },
   balanceLabel: {
     fontSize: 12,
+    lineHeight: 18,
     opacity: 0.6,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -501,6 +501,7 @@ const styles = StyleSheet.create({
   },
   balanceAmount: {
     fontSize: 24,
+    lineHeight: 32,
     fontWeight: 'bold',
   },
   error: {

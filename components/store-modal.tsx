@@ -10,12 +10,13 @@ import { calculatePrice, formatClicksPerMinute, STORE_ITEMS, StoreItem } from '@
 import { useThemeColor } from '@/hooks/use-theme-color';
 import React from 'react';
 import {
-    ActivityIndicator,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    View,
+  ActivityIndicator,
+  Modal,
+  Pressable,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
 
 interface StoreModalProps {
@@ -115,31 +116,33 @@ export function StoreModal({
     >
       <View style={styles.modalOverlay}>
         <ThemedView style={[styles.modalContent, { backgroundColor }]}>
-          <View style={styles.header}>
-            <ThemedText type="title" style={styles.title}>🏪 Store</ThemedText>
-            <Pressable onPress={onClose} style={styles.closeButton}>
-              <ThemedText style={styles.closeButtonText}>✕</ThemedText>
-            </Pressable>
-          </View>
-          
-          <View style={styles.balanceContainer}>
-            <ThemedText style={styles.balanceLabel}>Your Balance</ThemedText>
-            <ThemedText style={styles.balanceValue}>🖱️ {formatExact(balance)}</ThemedText>
-          </View>
-          
-          <ScrollView style={styles.itemsList} showsVerticalScrollIndicator={false}>
-            {STORE_ITEMS.map(item => (
-              <StoreItemCard
-                key={item.id}
-                item={item}
-                balance={balance}
-                ownedCount={ownedItems[item.id] || 0}
-                onPurchase={() => onPurchase(item.id)}
-                isPurchasing={isPurchasing}
-              />
-            ))}
-            <View style={styles.bottomPadding} />
-          </ScrollView>
+          <SafeAreaView style={styles.safeArea}>
+            <View style={styles.header}>
+              <ThemedText type="title" style={styles.title}>🏪 Store</ThemedText>
+              <Pressable onPress={onClose} style={styles.closeButton}>
+                <ThemedText style={styles.closeButtonText}>✕</ThemedText>
+              </Pressable>
+            </View>
+            
+            <View style={styles.balanceContainer}>
+              <ThemedText style={styles.balanceLabel}>Your Balance</ThemedText>
+              <ThemedText style={styles.balanceValue}>🖱️ {formatExact(balance)}</ThemedText>
+            </View>
+            
+            <ScrollView style={styles.itemsList} showsVerticalScrollIndicator={false}>
+              {STORE_ITEMS.map(item => (
+                <StoreItemCard
+                  key={item.id}
+                  item={item}
+                  balance={balance}
+                  ownedCount={ownedItems[item.id] || 0}
+                  onPurchase={() => onPurchase(item.id)}
+                  isPurchasing={isPurchasing}
+                />
+              ))}
+              <View style={styles.bottomPadding} />
+            </ScrollView>
+          </SafeAreaView>
         </ThemedView>
       </View>
     </Modal>
@@ -155,8 +158,12 @@ const styles = StyleSheet.create({
   modalContent: {
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
+    height: '75%',
+  },
+  safeArea: {
+    flex: 1,
     padding: 20,
-    maxHeight: '85%',
+    paddingTop: 24,
   },
   header: {
     flexDirection: 'row',
@@ -176,18 +183,21 @@ const styles = StyleSheet.create({
   },
   balanceContainer: {
     alignItems: 'center',
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
     borderRadius: 12,
     backgroundColor: 'rgba(10, 126, 164, 0.1)',
     marginBottom: 16,
   },
   balanceLabel: {
     fontSize: 14,
+    lineHeight: 20,
     opacity: 0.6,
     marginBottom: 4,
   },
   balanceValue: {
     fontSize: 28,
+    lineHeight: 36,
     fontWeight: 'bold',
   },
   itemsList: {
@@ -202,12 +212,14 @@ const styles = StyleSheet.create({
   },
   itemHeader: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 12,
   },
   itemEmoji: {
     fontSize: 40,
+    lineHeight: 48,
     marginRight: 12,
+    textAlign: 'center',
   },
   itemInfo: {
     flex: 1,

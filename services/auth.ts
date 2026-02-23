@@ -19,13 +19,27 @@ const COGNITO_CLIENT_ID = '67pqn4aprvfq2e07nl03cg1o1f';
 
 // Memory cache for synchronous access (required by Cognito SDK)
 const memoryStorage: Record<string, string> = {};
+let storageAvailable = true;
+
+// Check if AsyncStorage is available
+async function checkStorageAvailability(): Promise<boolean> {
+  try {
+    await AsyncStorage.setItem('__test__', 'test');
+    await AsyncStorage.removeItem('__test__');
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // Sync storage adapter that Cognito expects
 const cognitoStorage = {
   setItem: (key: string, value: string) => {
     memoryStorage[key] = value;
-    // Also persist to AsyncStorage in background
-    AsyncStorage.setItem(key, value).catch(console.error);
+    // Also persist to AsyncStorage in background (if available)
+    if (storageAvailable) {
+      AsyncStorage.setItem(key, value).catch(() => {});
+    }
     return value;
   },
   getItem: (key: string) => {
@@ -33,17 +47,27 @@ const cognitoStorage = {
   },
   removeItem: (key: string) => {
     delete memoryStorage[key];
-    AsyncStorage.removeItem(key).catch(console.error);
+    if (storageAvailable) {
+      AsyncStorage.removeItem(key).catch(() => {});
+    }
   },
   clear: () => {
     Object.keys(memoryStorage).forEach(key => delete memoryStorage[key]);
-    AsyncStorage.clear().catch(console.error);
+    if (storageAvailable) {
+      AsyncStorage.clear().catch(() => {});
+    }
   },
 };
 
 // Initialize memory cache from AsyncStorage
 async function initializeStorage() {
   try {
+    storageAvailable = await checkStorageAvailability();
+    if (!storageAvailable) {
+      console.log('AsyncStorage not available, using memory-only storage');
+      return;
+    }
+    
     const keys = await AsyncStorage.getAllKeys();
     const cognitoKeys = keys.filter(k => k.startsWith('CognitoIdentityServiceProvider'));
     for (const key of cognitoKeys) {
@@ -51,7 +75,8 @@ async function initializeStorage() {
       if (value) memoryStorage[key] = value;
     }
   } catch (e) {
-    console.error('Failed to initialize auth storage:', e);
+    console.log('Storage initialization skipped, using memory-only storage');
+    storageAvailable = false;
   }
 }
 

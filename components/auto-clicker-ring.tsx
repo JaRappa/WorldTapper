@@ -54,9 +54,9 @@ const AnimatedEmoji = ({
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   
-  // Calculate position on the ring
-  const x = Math.cos(angle) * radius;
-  const y = Math.sin(angle) * radius;
+  // Direction toward center for the "punch" animation
+  const dirX = -Math.cos(angle);
+  const dirY = -Math.sin(angle);
   
   useEffect(() => {
     // Pulse animation that repeats based on click interval
@@ -74,10 +74,11 @@ const AnimatedEmoji = ({
       false
     );
     
-    // Move toward center when clicking
+    // Move toward center when clicking (small punch motion)
+    const punchDistance = 8;
     translateX.value = withRepeat(
       withSequence(
-        withTiming(-x * 0.15, { duration: 150, easing: Easing.out(Easing.quad) }),
+        withTiming(dirX * punchDistance, { duration: 150, easing: Easing.out(Easing.quad) }),
         withTiming(0, { duration: 150, easing: Easing.in(Easing.quad) }),
         withDelay(intervalMs - 300, withTiming(0, { duration: 0 }))
       ),
@@ -87,19 +88,19 @@ const AnimatedEmoji = ({
     
     translateY.value = withRepeat(
       withSequence(
-        withTiming(-y * 0.15, { duration: 150, easing: Easing.out(Easing.quad) }),
+        withTiming(dirY * punchDistance, { duration: 150, easing: Easing.out(Easing.quad) }),
         withTiming(0, { duration: 150, easing: Easing.in(Easing.quad) }),
         withDelay(intervalMs - 300, withTiming(0, { duration: 0 }))
       ),
       -1,
       false
     );
-  }, [item.clicksPerMinute, x, y]);
+  }, [item.clicksPerMinute, dirX, dirY]);
   
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: x + translateX.value },
-      { translateY: y + translateY.value },
+      { translateX: translateX.value },
+      { translateY: translateY.value },
       { scale: scale.value },
     ],
   }));
@@ -197,12 +198,15 @@ export function AutoClickerRing({ ownedItems, worldSize, onBatchClick, onLocalCl
   }
   
   // Calculate ring radius based on world size
-  const baseRadius = worldSize / 2 + 30;
-  const emojiSize = 24; // Size of emoji
+  const baseRadius = worldSize / 2 + 50; // Gap from world edge
+  const orbitEmojiSize = 40; // Container size for emoji
   const itemsPerRing = 250; // Max items per ring before starting a new ring
   
   return (
-    <View style={[styles.container, { width: worldSize + 200, height: worldSize + 200 }]}>
+    <View 
+      style={styles.container} 
+      pointerEvents="none"
+    >
       {orbitingItems.map((orbiting, idx) => {
         // Calculate which ring this item is on (250 items per ring)
         const ringIndex = Math.floor(idx / itemsPerRing);
@@ -211,13 +215,26 @@ export function AutoClickerRing({ ownedItems, worldSize, onBatchClick, onLocalCl
         
         // Calculate angle for this position - items evenly distributed, will overlap when many
         const angle = (positionInRing / itemsInThisRing) * Math.PI * 2 - Math.PI / 2;
-        // Each ring is 1 emoji width (24px) apart
-        const radius = baseRadius + ringIndex * emojiSize;
+        // Each ring is 1 emoji width apart
+        const radius = baseRadius + ringIndex * orbitEmojiSize;
+        
+        // Calculate exact pixel position from center
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
         
         return (
           <View 
             key={orbiting.id} 
-            style={[styles.emojiContainer, { left: '50%', top: '50%' }]}
+            style={[
+              styles.emojiContainer, 
+              { 
+                // Transform from center position
+                transform: [
+                  { translateX: x },
+                  { translateY: y },
+                ],
+              }
+            ]}
           >
             <AnimatedEmoji
               item={orbiting.item}
@@ -235,16 +252,23 @@ export function AutoClickerRing({ ownedItems, worldSize, onBatchClick, onLocalCl
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
+    // Center the ring on top of the world button
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emojiContainer: {
     position: 'absolute',
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   orbitingEmoji: {
-    fontSize: 24,
-    position: 'absolute',
-    marginLeft: -12,
-    marginTop: -12,
+    fontSize: 28,
+    textAlign: 'center',
   },
 });
