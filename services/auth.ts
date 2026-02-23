@@ -2,6 +2,10 @@
  * Authentication Service using Amazon Cognito
  * 
  * Handles user sign up, sign in, sign out, and session management.
+ * 
+ * Security Note: Cognito User Pool ID and Client ID are loaded from environment
+ * variables or app configuration. While these are semi-public by design (required
+ * for client-side auth), server-side JWT validation ensures security.
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,10 +16,13 @@ import {
     CognitoUserPool,
     CognitoUserSession,
 } from 'amazon-cognito-identity-js';
+import Constants from 'expo-constants';
 
 // Cognito User Pool Configuration
-const COGNITO_USER_POOL_ID = 'us-east-1_C8WRlcvHt';
-const COGNITO_CLIENT_ID = '67pqn4aprvfq2e07nl03cg1o1f';
+// These values are loaded from app.json extra config or fall back to defaults
+// Note: These are client identifiers (not secrets) but should still be configurable
+const COGNITO_USER_POOL_ID = Constants.expoConfig?.extra?.cognitoUserPoolId ?? 'us-east-1_C8WRlcvHt';
+const COGNITO_CLIENT_ID = Constants.expoConfig?.extra?.cognitoClientId ?? '67pqn4aprvfq2e07nl03cg1o1f';
 
 // Memory cache for synchronous access (required by Cognito SDK)
 const memoryStorage: Record<string, string> = {};

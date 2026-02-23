@@ -8,6 +8,13 @@
     "scheme": "worldtapper",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "extra": {
+      "// Security Note": "These are client identifiers, not secrets. Server-side JWT validation ensures security.",
+      "cognitoUserPoolId": "us-east-1_C8WRlcvHt",
+      "cognitoClientId": "67pqn4aprvfq2e07nl03cg1o1f",
+      "apiBaseUrl": "https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod",
+      "wsBaseUrl": "wss://jo6m4amkee.execute-api.us-east-1.amazonaws.com/prod"
+    },
     "ios": {
       "supportsTablet": true
     },

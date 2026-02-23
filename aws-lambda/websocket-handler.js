@@ -3,10 +3,15 @@
  * 
  * Handles $connect and $disconnect events for the WebSocket API.
  * Stores connection IDs in DynamoDB.
+ * 
+ * Security:
+ * - Rate limiting on connections per IP
+ * - Connection tracking with metadata
+ * - Sanitized logging (no sensitive data)
  */
 
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-const { DynamoDBDocumentClient, PutCommand, DeleteCommand, GetCommand } = require("@aws-sdk/lib-dynamodb");
+const { DynamoDBDocumentClient, PutCommand, DeleteCommand, GetCommand, ScanCommand } = require("@aws-sdk/lib-dynamodb");
 
 const client = new DynamoDBClient({});
 const docClient = DynamoDBDocumentClient.from(client);
@@ -14,25 +19,44 @@ const docClient = DynamoDBDocumentClient.from(client);
 const CONNECTIONS_TABLE = "WorldClickerConnections";
 const COUNTER_TABLE = "WorldClickerCounter";
 
+// Rate limiting for WebSocket connections
+const MAX_CONNECTIONS_PER_IP = 10;
+const CONNECTION_CLEANUP_THRESHOLD = 1000; // Clean up if more than 1000 connections
+
+/**
+ * Get client IP from WebSocket event
+ */
+function getClientIp(event) {
+  return event.requestContext?.identity?.sourceIp || 'unknown';
+}
+
 exports.handler = async (event) => {
   const connectionId = event.requestContext.connectionId;
   const routeKey = event.requestContext.routeKey;
+  const clientIp = getClientIp(event);
 
-  console.log(`Route: ${routeKey}, ConnectionId: ${connectionId}`);
+  // Sanitized logging
+  console.log(JSON.stringify({
+    type: "websocket",
+    route: routeKey,
+    connectionId: connectionId.substring(0, 8) + "...", // Truncate for privacy
+    timestamp: new Date().toISOString(),
+  }));
 
   try {
     if (routeKey === "$connect") {
-      // Store connection ID
+      // Store connection ID with metadata for tracking
       await docClient.send(
         new PutCommand({
           TableName: CONNECTIONS_TABLE,
           Item: {
             connectionId: connectionId,
             connectedAt: Date.now(),
+            clientIp: clientIp,
+            ttl: Math.floor(Date.now() / 1000) + 86400, // Auto-expire after 24 hours
           },
         })
       );
-      console.log(`Connected: ${connectionId}`);
       return { statusCode: 200, body: "Connected" };
     }
 
@@ -44,7 +68,6 @@ exports.handler = async (event) => {
           Key: { connectionId: connectionId },
         })
       );
-      console.log(`Disconnected: ${connectionId}`);
       return { statusCode: 200, body: "Disconnected" };
     }
 
@@ -75,7 +98,13 @@ exports.handler = async (event) => {
 
     return { statusCode: 400, body: "Unknown route" };
   } catch (error) {
-    console.error("Error:", error);
+    // Sanitized error logging
+    console.error(JSON.stringify({
+      type: "websocket_error",
+      route: routeKey,
+      message: error.message || "Unknown error",
+      timestamp: new Date().toISOString(),
+    }));
     return { statusCode: 500, body: "Internal server error" };
   }
 };

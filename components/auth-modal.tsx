@@ -7,7 +7,7 @@
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     KeyboardAvoidingView,
@@ -19,6 +19,89 @@ import {
     View
 } from 'react-native';
 import { LegalModal } from './legal-modal';
+
+// Password requirements configuration
+const PASSWORD_REQUIREMENTS = [
+  { id: 'length', label: 'At least 8 characters', check: (pw: string) => pw.length >= 8 },
+  { id: 'uppercase', label: 'One uppercase letter (A-Z)', check: (pw: string) => /[A-Z]/.test(pw) },
+  { id: 'lowercase', label: 'One lowercase letter (a-z)', check: (pw: string) => /[a-z]/.test(pw) },
+  { id: 'number', label: 'One number (0-9)', check: (pw: string) => /[0-9]/.test(pw) },
+  { id: 'special', label: 'One special character (!@#$...)', check: (pw: string) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(pw) },
+];
+
+// Password Requirements Checklist Component
+function PasswordRequirements({ password, tintColor }: { password: string; tintColor: string }) {
+  const requirements = useMemo(() => {
+    return PASSWORD_REQUIREMENTS.map(req => ({
+      ...req,
+      met: req.check(password),
+    }));
+  }, [password]);
+
+  const allMet = requirements.every(r => r.met);
+
+  return (
+    <View style={passwordStyles.container}>
+      <ThemedText style={passwordStyles.title}>
+        Password Requirements {allMet && '✅'}
+      </ThemedText>
+      {requirements.map(req => (
+        <View key={req.id} style={passwordStyles.requirement}>
+          <View style={[
+            passwordStyles.checkCircle,
+            req.met ? { backgroundColor: tintColor, borderColor: tintColor } : { borderColor: '#666' }
+          ]}>
+            {req.met && <ThemedText style={passwordStyles.checkIcon}>✓</ThemedText>}
+          </View>
+          <ThemedText style={[
+            passwordStyles.label,
+            req.met && { opacity: 0.6 }
+          ]}>
+            {req.label}
+          </ThemedText>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const passwordStyles = StyleSheet.create({
+  container: {
+    backgroundColor: 'rgba(128, 128, 128, 0.1)',
+    borderRadius: 6,
+    padding: 8,
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginBottom: 4,
+    opacity: 0.9,
+  },
+  requirement: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 2,
+  },
+  checkCircle: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    borderWidth: 1.5,
+    marginRight: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkIcon: {
+    color: '#000',
+    fontSize: 9,
+    fontWeight: 'bold',
+  },
+  label: {
+    fontSize: 11,
+    opacity: 0.8,
+  },
+});
 
 interface AuthModalProps {
   visible: boolean;
@@ -46,6 +129,7 @@ export function AuthModal({
   const [error, setError] = useState<string | null>(null);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [showLegalModal, setShowLegalModal] = useState<'terms' | 'privacy' | null>(null);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false);
   
   const backgroundColor = useThemeColor({}, 'background');
   const textColor = useThemeColor({}, 'text');
@@ -91,8 +175,52 @@ export function AuthModal({
       return;
     }
     
+    // Username validation
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters');
+      return;
+    }
+    
+    if (username.length > 20) {
+      setError('Username must be 20 characters or less');
+      return;
+    }
+    
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      setError('Username can only contain letters, numbers, underscores, and hyphens');
+      return;
+    }
+    
+    // Password complexity validation (matches Cognito policy)
     if (password.length < 8) {
       setError('Password must be at least 8 characters');
+      return;
+    }
+    
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter');
+      return;
+    }
+    
+    if (!/[a-z]/.test(password)) {
+      setError('Password must contain at least one lowercase letter');
+      return;
+    }
+    
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one number');
+      return;
+    }
+    
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      setError('Password must contain at least one special character (!@#$%^&*...)');
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address');
       return;
     }
     
@@ -207,7 +335,17 @@ export function AuthModal({
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                onFocus={() => setIsPasswordFocused(true)}
+                onBlur={() => {
+                  // Small delay to allow tap events on other elements to register
+                  // before the layout shifts from hiding password requirements
+                  setTimeout(() => setIsPasswordFocused(false), 150);
+                }}
               />
+              
+              {mode === 'signup' && password.length > 0 && isPasswordFocused && (
+                <PasswordRequirements password={password} tintColor={tintColor} />
+              )}
               
               {mode === 'signup' && (
                 <View style={styles.checkboxContainer}>

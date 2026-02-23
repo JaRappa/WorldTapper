@@ -3,16 +3,23 @@
  * 
  * Handles communication with the AWS Lambda backend
  * for the global click counter, user data, and store purchases.
+ * 
+ * Security Note: API URLs are loaded from environment configuration.
+ * All authenticated endpoints use JWT tokens validated server-side.
  */
 
+import Constants from 'expo-constants';
 import { getIdToken } from './auth';
 
-// AWS API Gateway URLs
-const API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/counter';
-const USER_API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/user';
-const STORE_API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/store';
-const LEADERBOARD_API_URL = 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod/leaderboard';
-const WS_URL = 'wss://jo6m4amkee.execute-api.us-east-1.amazonaws.com/prod';
+// AWS API Gateway URLs - loaded from app.json extra config or fall back to defaults
+const API_BASE_URL = Constants.expoConfig?.extra?.apiBaseUrl ?? 'https://rdbffoe73a.execute-api.us-east-1.amazonaws.com/prod';
+const WS_BASE_URL = Constants.expoConfig?.extra?.wsBaseUrl ?? 'wss://jo6m4amkee.execute-api.us-east-1.amazonaws.com/prod';
+
+const API_URL = `${API_BASE_URL}/counter`;
+const USER_API_URL = `${API_BASE_URL}/user`;
+const STORE_API_URL = `${API_BASE_URL}/store`;
+const LEADERBOARD_API_URL = `${API_BASE_URL}/leaderboard`;
+const WS_URL = WS_BASE_URL;
 
 // For local testing without AWS, use this mock:
 const USE_MOCK = false; // Set to true for local testing without AWS
