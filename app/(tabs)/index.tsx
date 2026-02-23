@@ -268,7 +268,7 @@ export default function HomeScreen() {
       </ThemedText>
 
       {/* World button with auto-clicker ring */}
-      <View style={styles.worldContainer}>
+      <View style={[styles.worldContainer, { width: emojiSize + 180, height: emojiSize + 180 }]}>
         {userData?.ownedItems && Object.keys(userData.ownedItems).length > 0 && (
           <AutoClickerRing
             ownedItems={userData.ownedItems}
