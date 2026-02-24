@@ -1,6 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, AppState, Platform, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AnimatedCounter } from '@/components/animated-counter';
 import { AuthModal } from '@/components/auth-modal';
@@ -35,6 +36,7 @@ export default function HomeScreen() {
   
   const { user, userData, isSignedIn, signIn, signUp, confirmSignUp, signOut, refreshUserData } = useAuth();
   const tintColor = useThemeColor({}, 'tint');
+  const insets = useSafeAreaInsets();
   
   // Responsive scaling based on screen width
   const isSmallScreen = screenWidth < 375;
@@ -239,7 +241,10 @@ export default function HomeScreen() {
     : 0;
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { 
+      paddingTop: Platform.OS === 'web' ? Math.max(insets.top, 20) : 50,
+      paddingBottom: Platform.OS === 'web' ? Math.max(insets.bottom, 20) : 0,
+    }]}>
       {/* Header with leaderboard and auth/user controls */}
       <View style={styles.header}>
         <Pressable 
@@ -337,7 +342,7 @@ export default function HomeScreen() {
 
       {/* Store and Inventory buttons for signed-in users */}
       {isSignedIn && (
-        <View style={styles.actionButtons}>
+        <View style={[styles.actionButtons, { marginBottom: Platform.OS === 'web' ? 16 : 0 }]}>
           <Pressable 
             style={[styles.actionButton, { backgroundColor: tintColor }]}
             onPress={() => setShowStore(true)}
@@ -353,7 +358,7 @@ export default function HomeScreen() {
         </View>
       )}
 
-      <ThemedText style={[styles.instruction, { marginTop: isSignedIn ? 16 : sectionSpacing }]}>
+      <ThemedText style={[styles.instruction, { marginTop: isSignedIn ? 16 : sectionSpacing, marginBottom: Platform.OS === 'web' ? 20 : 0 }]}>
         {isSignedIn 
           ? 'Tap to earn clicks & buy auto-clickers!' 
           : 'Tap the Earth to add your click!'}
@@ -398,8 +403,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    paddingTop: 50,
     paddingHorizontal: 12,
+    backgroundColor: '#151718', // Match theme dark background - prevents white bars on iOS Safari
   },
   header: {
     width: '100%',
