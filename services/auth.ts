@@ -260,7 +260,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
         }
 
         const user: AuthUser = {
-          username: '',
+          username: cognitoUser.getUsername(), // Use Cognito username directly
           email: '',
           sub: '',
         };
@@ -269,15 +269,12 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
           if (attr.getName() === 'email') {
             user.email = attr.getValue();
           }
-          if (attr.getName() === 'preferred_username') {
-            user.username = attr.getValue();
-          }
           if (attr.getName() === 'sub') {
             user.sub = attr.getValue();
           }
         });
 
-        // Use email as username if preferred_username is not set
+        // Fallback if username is empty
         if (!user.username) {
           user.username = user.email.split('@')[0];
         }
